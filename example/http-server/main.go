@@ -96,7 +96,7 @@ func main() {
 func defSrv(mux *http.ServeMux, port int) {
 	lc := gonet.ListenConfig{}
 
-	l, err := lc.Listen(context.Background(), "tcp", "0.0.0.0:8080")
+	l, err := lc.Listen(context.Background(), "tcp", fmt.Sprintf("0.0.0.0:%d", port))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -128,12 +128,14 @@ func ringSrv(mux *http.ServeMux, port int) {
 		log.Fatal(err)
 	}
 
-	l, err := net.NewListener(gonet.ListenConfig{}, "0.0.0.0:8080", reactor)
+	addr := fmt.Sprintf("0.0.0.0:%d", port)
+
+	l, err := net.NewListener(gonet.ListenConfig{}, addr, reactor)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	server := &http.Server{Addr: "0.0.0.0:8080", Handler: mux}
+	server := &http.Server{Addr: addr, Handler: mux}
 	defer server.Close()
 
 	err = server.Serve(l)

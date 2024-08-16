@@ -5,6 +5,7 @@ package reactor
 import (
 	"context"
 	"errors"
+	"log"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -18,7 +19,7 @@ type Callback func(event uring.CQEvent)
 
 type configuration struct {
 	tickDuration time.Duration
-	logger       Logger
+	logger       *log.Logger
 }
 
 type Option func(cfg *configuration)
@@ -31,7 +32,7 @@ func WithTickTimeout(duration time.Duration) Option {
 }
 
 // WithLogger set logger for event loop.
-func WithLogger(l Logger) Option {
+func WithLogger(l *log.Logger) Option {
 	return func(cfg *configuration) {
 		cfg.logger = l
 	}
@@ -59,7 +60,7 @@ func New(rings []*uring.Ring, opts ...Option) (*Reactor, error) {
 	r := &Reactor{
 		config: &configuration{
 			tickDuration: time.Millisecond * 1,
-			logger:       &nopLogger{},
+			logger:       log.Default(),
 		},
 	}
 
@@ -137,7 +138,7 @@ type ringEventLoop struct {
 
 	submitSignal chan struct{}
 
-	logger Logger
+	logger *log.Logger
 
 	stopConsumerCh  chan struct{}
 	stopPublisherCh chan struct{}
@@ -145,7 +146,7 @@ type ringEventLoop struct {
 	needSubmit uint32
 }
 
-func newRingEventLoop(ring *uring.Ring, logger Logger) *ringEventLoop {
+func newRingEventLoop(ring *uring.Ring, logger *log.Logger) *ringEventLoop {
 	return &ringEventLoop{
 		ring:            ring,
 		submitSignal:    make(chan struct{}),
@@ -171,7 +172,7 @@ func (loop *ringEventLoop) runConsumer(tickDuration time.Duration) {
 		}
 
 		if err != nil {
-			loop.logger.Log("io_uring wait", err)
+			loop.logger.Println("io_uring wait", err)
 			goto CheckCtxAndContinue
 		}
 
@@ -266,7 +267,7 @@ func (loop *ringEventLoop) runPublisher() {
 				loop.queueSQELock.Unlock()
 
 				if err != nil {
-					loop.logger.Log("io_uring submit", err)
+					loop.logger.Println("io_uring submit", err)
 				}
 			}
 		case <-loop.stopPublisherCh:

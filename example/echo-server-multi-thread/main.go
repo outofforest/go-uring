@@ -88,7 +88,7 @@ func main() {
 			}
 		}()
 
-		netReactor, err := reactor.NewNet(rings, reactor.WithLogger(&logger{}))
+		netReactor, err := reactor.NewNet(rings)
 		if err != nil {
 			log.Fatal(err)
 		}

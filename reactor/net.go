@@ -5,6 +5,7 @@ package reactor
 import (
 	"context"
 	"errors"
+	"log"
 	"math"
 	"runtime"
 	"sync/atomic"
@@ -58,7 +59,7 @@ func NewNet(rings []*uring.Ring, opts ...Option) (*NetworkReactor, error) {
 	r := &NetworkReactor{
 		config: &configuration{
 			tickDuration: time.Millisecond * 1,
-			logger:       &nopLogger{},
+			logger:       log.Default(),
 		},
 	}
 
@@ -158,10 +159,10 @@ type ringNetEventLoop struct {
 
 	submitAllowed uint32
 
-	log Logger
+	log *log.Logger
 }
 
-func newRingNetEventLoop(ring *uring.Ring, logger Logger, registry *cbRegistry) *ringNetEventLoop {
+func newRingNetEventLoop(ring *uring.Ring, logger *log.Logger, registry *cbRegistry) *ringNetEventLoop {
 	return &ringNetEventLoop{
 		ring:            ring,
 		reqBuss:         make(chan subSqeRequest, 1<<8),
@@ -187,7 +188,7 @@ func (loop *ringNetEventLoop) runConsumer(tickDuration time.Duration) {
 		}
 
 		if err != nil {
-			loop.log.Log("io_uring", loop.ring.Fd(), "wait cqe", err)
+			loop.log.Println("io_uring", loop.ring.Fd(), "wait cqe", err)
 			goto CheckCtxAndContinue
 		}
 
@@ -267,7 +268,7 @@ func (loop *ringNetEventLoop) runPublisher() {
 			if err != nil {
 				id := RequestID(req.userData)
 				loop.registry.pop(id.fd(), id.nonce())
-				loop.log.Log("io_uring", loop.ring.Fd(), "queue operation", err)
+				loop.log.Println("io_uring", loop.ring.Fd(), "queue operation", err)
 			}
 
 		case <-loop.submitSignal:
@@ -277,7 +278,7 @@ func (loop *ringNetEventLoop) runPublisher() {
 					if errors.Is(err, syscall.EBUSY) || errors.Is(err, syscall.EAGAIN) {
 						atomic.StoreUint32(&loop.submitAllowed, 1)
 					} else {
-						loop.log.Log("io_uring", loop.ring.Fd(), "submit", err)
+						loop.log.Println("io_uring", loop.ring.Fd(), "submit", err)
 					}
 				}
 			}

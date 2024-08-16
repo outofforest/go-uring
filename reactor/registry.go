@@ -48,7 +48,7 @@ func (sh *shard) add(idx int, cb Callback) (n uint32) {
 		return n
 	}
 
-	//slow path, for big fd values
+	// slow path, for big fd values
 	sh.Lock()
 	sh.slowNonces[idx]++
 	n = sh.slowNonces[idx]

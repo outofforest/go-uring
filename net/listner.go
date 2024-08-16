@@ -4,13 +4,14 @@ package net
 
 import (
 	"context"
-	reactor "github.com/godzie44/go-uring/reactor"
-	"github.com/godzie44/go-uring/uring"
-	"golang.org/x/sys/unix"
 	"net"
 	"os"
 	"syscall"
 	"time"
+
+	reactor "github.com/godzie44/go-uring/reactor"
+	"github.com/godzie44/go-uring/uring"
+	"golang.org/x/sys/unix"
 )
 
 // defaultTCPKeepAlive is a default constant value for TCPKeepAlive times
@@ -19,7 +20,7 @@ const (
 	defaultTCPKeepAlive = 15 * time.Second
 )
 
-//Listener tcp listener with uring reactor inside.
+// Listener tcp listener with uring reactor inside.
 type Listener struct {
 	lc net.ListenConfig
 

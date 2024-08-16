@@ -3,13 +3,14 @@
 package net
 
 import (
+	"net"
+	"sync"
+	"testing"
+
 	reactor "github.com/godzie44/go-uring/reactor"
 	"github.com/godzie44/go-uring/uring"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"net"
-	"sync"
-	"testing"
 )
 
 func TestListenerAccept(t *testing.T) {

@@ -3,26 +3,28 @@ package main
 import (
 	"flag"
 	"fmt"
-	uringnet "github.com/godzie44/go-uring/net"
-	"github.com/godzie44/go-uring/reactor"
-	"github.com/godzie44/go-uring/uring"
 	"io"
 	"log"
 	"net"
 	"runtime"
 	"strconv"
 	"time"
+
+	uringnet "github.com/godzie44/go-uring/net"
+	"github.com/godzie44/go-uring/reactor"
+	"github.com/godzie44/go-uring/uring"
 )
 
-type logger struct {
-}
+type logger struct{}
 
 func (l *logger) Log(keyvals ...interface{}) {
 	log.Println(keyvals...)
 }
 
-const MaxConns = 4096
-const MaxMsgLen = 2048
+const (
+	MaxConns  = 4096
+	MaxMsgLen = 2048
+)
 
 func initBuffs() [][]byte {
 	buffs := make([][]byte, MaxConns)
@@ -40,26 +42,32 @@ const (
 	modeDefault     = "default"
 )
 
-var mode = flag.String("mode", "uring", "server async backend: uring/uring-sq-poll/default")
-var ringCount = flag.Int("ring-count", 6, "io_uring's count")
-var wpCount = flag.Int("wp-count", 2, "io_uring's work pools count")
+var (
+	mode      = flag.String("mode", "uring", "server async backend: uring/uring-sq-poll/default")
+	ringCount = flag.Int("ring-count", 6, "io_uring's count")
+	wpCount   = flag.Int("wp-count", 2, "io_uring's work pools count")
+)
 
 func main() {
 	flag.Parse()
+
 	portStr := flag.Arg(0)
-	port, _ := strconv.Atoi(portStr)
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	var listener net.Listener
-	var err error
-
-	var opts []uring.SetupOption
+	listener := net.Listener(nil)
+	opts := []uring.SetupOption(nil)
 
 	switch *mode {
 	case modeDefault:
 		listener, err = net.ListenTCP("tcp", &net.TCPAddr{
 			Port: port,
 		})
-		checkErr(err)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 	case modeURingSQPoll:
 		opts = append(opts, uring.WithSQPoll(time.Millisecond*100))
@@ -69,18 +77,26 @@ func main() {
 		runtime.GOMAXPROCS(runtime.NumCPU() * 2)
 
 		rings, closeRings, err := uring.CreateMany(*ringCount, uring.MaxEntries>>3, *wpCount, opts...)
-		checkErr(err)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		defer func() {
-			if err = closeRings(); err != nil {
+			err := closeRings()
+			if err != nil {
 				log.Fatal(err)
 			}
 		}()
 
 		netReactor, err := reactor.NewNet(rings, reactor.WithLogger(&logger{}))
-		checkErr(err)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		listener, err = uringnet.NewListener(net.ListenConfig{}, fmt.Sprintf("0.0.0.0:%d", port), netReactor)
-		checkErr(err)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 	default:
 		log.Fatal("mode must be one of uring/uring-sq-poll/default")
@@ -98,14 +114,16 @@ func main() {
 func runServer(listener net.Listener) {
 	for {
 		conn, err := listener.Accept()
-		checkErr(err)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		go handleConn(conn)
 	}
 }
 
 func handleConn(conn net.Conn) {
-	var fd int
+	fd := int(0)
 
 	switch c := conn.(type) {
 	case *net.TCPConn:
@@ -119,18 +137,18 @@ func handleConn(conn net.Conn) {
 	for {
 		n, err := conn.Read(buff)
 		if err == io.EOF || n == 0 {
-			checkErr(conn.Close())
+			if err != nil {
+				log.Fatal(err)
+			}
 			return
 		}
-		checkErr(err)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		_, err = conn.Write(buff[:n])
-		checkErr(err)
-	}
-}
-
-func checkErr(err error) {
-	if err != nil {
-		log.Fatal(err)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }

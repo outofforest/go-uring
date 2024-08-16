@@ -23,21 +23,21 @@ type configuration struct {
 
 type Option func(cfg *configuration)
 
-//WithTickTimeout set tick duration for event loop.
+// WithTickTimeout set tick duration for event loop.
 func WithTickTimeout(duration time.Duration) Option {
 	return func(cfg *configuration) {
 		cfg.tickDuration = duration
 	}
 }
 
-//WithLogger set logger for event loop.
+// WithLogger set logger for event loop.
 func WithLogger(l Logger) Option {
 	return func(cfg *configuration) {
 		cfg.logger = l
 	}
 }
 
-//Reactor is event loop's manager with main responsibility - handling client requests and return responses asynchronously.
+// Reactor is event loop's manager with main responsibility - handling client requests and return responses asynchronously.
 type Reactor struct {
 	loops []*ringEventLoop
 
@@ -46,9 +46,9 @@ type Reactor struct {
 	config *configuration
 }
 
-//New create new reactor instance.
-//rings - io_uring instances. The reactor will create one event loop for each instance.
-//opts - reactor options.
+// New create new reactor instance.
+// rings - io_uring instances. The reactor will create one event loop for each instance.
+// opts - reactor options.
 func New(rings []*uring.Ring, opts ...Option) (*Reactor, error) {
 	for _, ring := range rings {
 		if err := checkRingReq(ring, false); err != nil {
@@ -75,7 +75,7 @@ func New(rings []*uring.Ring, opts ...Option) (*Reactor, error) {
 	return r, nil
 }
 
-//Run start reactor.
+// Run start reactor.
 func (r *Reactor) Run(ctx context.Context) {
 	for _, loop := range r.loops {
 		go loop.runConsumer(r.config.tickDuration)
@@ -104,14 +104,14 @@ func (r *Reactor) loopForNonce(nonce uint64) *ringEventLoop {
 	return r.loops[nonce%uint64(n)]
 }
 
-//Queue io_uring operation. Callback function `cb` calling when receive cqe.
-//Return uint64 which can be used as the SQE identifier.
+// Queue io_uring operation. Callback function `cb` calling when receive cqe.
+// Return uint64 which can be used as the SQE identifier.
 func (r *Reactor) Queue(op uring.Operation, cb Callback) (uint64, error) {
 	return r.queue(op, cb, time.Duration(0))
 }
 
-//QueueWithDeadline io_uring operation. Callback function `cb` calling when receive cqe.
-//After a deadline time, a CQE with the error ECANCELED will be placed in the channel retChan.
+// QueueWithDeadline io_uring operation. Callback function `cb` calling when receive cqe.
+// After a deadline time, a CQE with the error ECANCELED will be placed in the channel retChan.
 func (r *Reactor) QueueWithDeadline(op uring.Operation, cb Callback, deadline time.Time) (uint64, error) {
 	if deadline.IsZero() {
 		return r.Queue(op, cb)
@@ -120,8 +120,8 @@ func (r *Reactor) QueueWithDeadline(op uring.Operation, cb Callback, deadline ti
 	return r.queue(op, cb, time.Until(deadline))
 }
 
-//Cancel queued operation.
-//nonce - SQE id returned by Queue method.
+// Cancel queued operation.
+// nonce - SQE id returned by Queue method.
 func (r *Reactor) Cancel(nonce uint64) error {
 	loop := r.loopForNonce(nonce)
 	return loop.cancel(nonce)

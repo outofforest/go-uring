@@ -4,14 +4,15 @@ package uring
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"runtime"
 	"syscall"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-//TestProbe test IORING_REGISTER_PROBE
+// TestProbe test IORING_REGISTER_PROBE
 func TestProbe(t *testing.T) {
 	ring, err := New(4)
 	require.NoError(t, err)
@@ -31,7 +32,7 @@ func TestProbe(t *testing.T) {
 	assert.NotEqual(t, 0, probe.GetOP(int(WriteVCode)).Flags&OpSupportedFlag, "WRITEV not supported")
 }
 
-//TestIOWQMaxWorkers test IORING_REGISTER_IOWQ_MAX_WORKERS
+// TestIOWQMaxWorkers test IORING_REGISTER_IOWQ_MAX_WORKERS
 func TestIOWQMaxWorkers(t *testing.T) {
 	ring, err := New(4)
 	require.NoError(t, err)

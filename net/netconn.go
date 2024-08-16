@@ -5,8 +5,6 @@ package net
 import (
 	"errors"
 	"fmt"
-	reactor "github.com/godzie44/go-uring/reactor"
-	"github.com/godzie44/go-uring/uring"
 	"io"
 	"net"
 	"os"
@@ -14,6 +12,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	reactor "github.com/godzie44/go-uring/reactor"
+	"github.com/godzie44/go-uring/uring"
 )
 
 type Conn struct {

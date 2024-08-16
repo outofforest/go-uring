@@ -1,13 +1,14 @@
 package uring
 
 import (
-	"github.com/stretchr/testify/require"
-	"golang.org/x/sys/unix"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"golang.org/x/sys/unix"
 )
 
-//TestRingClose test Close operation.
+// TestRingClose test Close operation.
 func TestRingClose(t *testing.T) {
 	r, err := New(2)
 	require.NoError(t, err)

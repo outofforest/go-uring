@@ -60,7 +60,7 @@ const (
 	sqesOffset   uint64 = 0x10000000
 )
 
-//feature flags
+// feature flags
 const (
 	featSingleMMap uint32 = 1 << 0
 	featNoDrop     uint32 = 1 << 1

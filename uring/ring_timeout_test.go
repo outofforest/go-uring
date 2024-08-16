@@ -4,15 +4,16 @@ package uring
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"runtime"
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-//TestSingleTimeout test single timeout command.
+// TestSingleTimeout test single timeout command.
 func TestSingleTimeout(t *testing.T) {
 	r, err := New(8)
 	require.NoError(t, err)
@@ -31,7 +32,7 @@ func TestSingleTimeout(t *testing.T) {
 	assert.True(t, time.Since(submitTime) > time.Second)
 }
 
-//TestMultipleTimeout test multiple timeouts command.
+// TestMultipleTimeout test multiple timeouts command.
 func TestMultipleTimeout(t *testing.T) {
 	r, err := New(8)
 	require.NoError(t, err)
@@ -70,7 +71,7 @@ ENDTEST:
 	}
 }
 
-//TestSingleTimeoutWait test wait cq event with timeout function.
+// TestSingleTimeoutWait test wait cq event with timeout function.
 func TestSingleTimeoutWait(t *testing.T) {
 	r, err := New(8)
 	require.NoError(t, err)
@@ -85,7 +86,7 @@ func TestSingleTimeoutWait(t *testing.T) {
 		require.Equal(t, 2, int(c))
 	}
 
-	var i = 0
+	i := 0
 	for {
 		cqe, err := r.WaitCQEventsWithTimeout(2, time.Second*2)
 		if errors.Is(err, syscall.ETIME) {

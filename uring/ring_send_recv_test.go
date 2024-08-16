@@ -3,12 +3,13 @@
 package uring
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net"
 	"sync"
 	"syscall"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var str = "This is a test of sendmsg and recvmsg over io_uring!"

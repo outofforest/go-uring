@@ -1,9 +1,10 @@
 package reactor
 
 import (
+	"testing"
+
 	"github.com/godzie44/go-uring/uring"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestRegistry(t *testing.T) {
@@ -28,7 +29,7 @@ func TestRegistry(t *testing.T) {
 		registry := newCbRegistry(2, granularity)
 
 		for _, tc := range testCases {
-			var nonces = map[int][]uint32{}
+			nonces := map[int][]uint32{}
 
 			for _, item := range tc {
 				fd := item.fd

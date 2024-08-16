@@ -6,14 +6,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"golang.org/x/sys/unix"
 	"net"
 	"sync"
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"golang.org/x/sys/unix"
 )
 
 func dial(t *testing.T, addr string, connChan chan<- net.Conn) {
@@ -26,7 +27,7 @@ func dial(t *testing.T, addr string, connChan chan<- net.Conn) {
 func makeTCPListener(addr string) (*net.TCPListener, uintptr, error) {
 	var fdescr uintptr
 
-	var listenConfig = net.ListenConfig{
+	listenConfig := net.ListenConfig{
 		Control: func(network, address string, c syscall.RawConn) error {
 			var err error
 			_ = c.Control(func(fd uintptr) {
@@ -200,7 +201,7 @@ func TestAcceptCancel(t *testing.T) {
 	}
 }
 
-//Test issue many accepts and see if we handle cancellation on exit
+// Test issue many accepts and see if we handle cancellation on exit
 func TestAcceptMany(t *testing.T) {
 	type testCase struct {
 		count     int
@@ -252,7 +253,7 @@ type linkTestCase struct {
 	expected  [2]error
 }
 
-//TestAcceptLink test accept with linked IORING_OP_LINK_TIMEOUT sqe.
+// TestAcceptLink test accept with linked IORING_OP_LINK_TIMEOUT sqe.
 func TestAcceptLink(t *testing.T) {
 	testCases := []linkTestCase{
 		{doConnect: true, timeout: time.Second, expected: [2]error{nil, syscall.ECANCELED}},

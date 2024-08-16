@@ -4,10 +4,11 @@ package uring
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"syscall"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateRing(t *testing.T) {
@@ -70,7 +71,7 @@ func queueNOPs(r *Ring, count int, offset int) (err error) {
 	return err
 }
 
-//TestCQRingReady test CQ ready.
+// TestCQRingReady test CQ ready.
 func TestCQRingReady(t *testing.T) {
 	ring, err := New(4)
 	require.NoError(t, err)
@@ -100,7 +101,7 @@ func TestCQRingReady(t *testing.T) {
 	assert.Equal(t, uint32(0), ring.cqRing.readyCount())
 }
 
-//TestCQRingFull test cq ring overflow.
+// TestCQRingFull test cq ring overflow.
 func TestCQRingFull(t *testing.T) {
 	ring, err := New(4)
 	require.NoError(t, err)
@@ -130,7 +131,7 @@ func TestCQRingFull(t *testing.T) {
 	assert.False(t, *ring.cqRing.kOverflow != 4 && !(ring.Params.NoDropFeature()))
 }
 
-//TestCQRingSize test CQ ring sizing.
+// TestCQRingSize test CQ ring sizing.
 func TestCQRingSize(t *testing.T) {
 	ring, err := New(4, WithCQSize(64))
 	if errors.Is(err, syscall.EINVAL) {
@@ -156,7 +157,7 @@ func fillNOPs(r *Ring) (filled int) {
 	return filled
 }
 
-//TestRingNopAllSizes exercise full filling of SQ and CQ ring.
+// TestRingNopAllSizes exercise full filling of SQ and CQ ring.
 func TestRingNopAllSizes(t *testing.T) {
 	var depth uint32 = 1
 	for depth <= MaxEntries {
@@ -189,7 +190,7 @@ func TestRingNopAllSizes(t *testing.T) {
 	}
 }
 
-//TestCQPeekBatch test CQ peek-batch.
+// TestCQPeekBatch test CQ peek-batch.
 func TestCQPeekBatch(t *testing.T) {
 	ring, err := New(4)
 	require.NoError(t, err)

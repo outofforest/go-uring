@@ -4,13 +4,14 @@ package reactor
 
 import (
 	"context"
-	"github.com/godzie44/go-uring/uring"
-	"github.com/stretchr/testify/suite"
 	"os"
 	"sync"
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/godzie44/go-uring/uring"
+	"github.com/stretchr/testify/suite"
 )
 
 type ReactorTestSuite struct {

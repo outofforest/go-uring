@@ -1,11 +1,12 @@
 package uring
 
 import (
-	"github.com/stretchr/testify/require"
 	"net"
 	"net/http"
 	"syscall"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestConnect(t *testing.T) {

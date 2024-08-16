@@ -6,19 +6,22 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"math/rand"
 	"os"
 	"syscall"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-const fileSize = 128 * 1024
-const bufferSize = 4096
-const bufferCnt = fileSize / bufferSize
+const (
+	fileSize   = 128 * 1024
+	bufferSize = 4096
+	bufferCnt  = fileSize / bufferSize
+)
 
-//TestIOPoll basic read/write tests with polled IO.
+// TestIOPoll basic read/write tests with polled IO.
 func TestIOPoll(t *testing.T) {
 	var fName string
 	{
@@ -35,7 +38,7 @@ func TestIOPoll(t *testing.T) {
 	type testCase struct {
 		write, buffSelect bool
 	}
-	var testCases = []testCase{
+	testCases := []testCase{
 		{write: false, buffSelect: false},
 		{write: true, buffSelect: false},
 	}
@@ -124,7 +127,7 @@ func testIO(t *testing.T, fName string, vectors [][]byte, write, bufSelect bool)
 	} else {
 		flags |= syscall.O_RDONLY
 	}
-	file, err := os.OpenFile(fName, flags|syscall.O_DIRECT, 0644)
+	file, err := os.OpenFile(fName, flags|syscall.O_DIRECT, 0o644)
 	require.NoError(t, err)
 	defer file.Close()
 

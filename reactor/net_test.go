@@ -4,16 +4,17 @@ package reactor
 
 import (
 	"context"
-	"github.com/godzie44/go-uring/uring"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
-	"golang.org/x/sys/unix"
 	"math"
 	"net"
 	"sync"
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/godzie44/go-uring/uring"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"golang.org/x/sys/unix"
 )
 
 type NetworkReactorTestSuite struct {
@@ -118,7 +119,7 @@ func TestRequestID(t *testing.T) {
 func makeTCPListener(addr string) (*net.TCPListener, int, error) {
 	var fdescr int
 
-	var listenConfig = net.ListenConfig{
+	listenConfig := net.ListenConfig{
 		Control: func(network, address string, c syscall.RawConn) error {
 			var err error
 			_ = c.Control(func(fd uintptr) {

@@ -14,7 +14,7 @@ const (
 	sysRingEnter    uintptr = 426
 	sysRingRegister uintptr = 427
 
-	//copied from signal_unix.numSig
+	// copied from signal_unix.numSig
 	numSig = 65
 )
 

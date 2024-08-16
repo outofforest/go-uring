@@ -5,12 +5,13 @@ package reactor
 import (
 	"context"
 	"errors"
-	"github.com/godzie44/go-uring/uring"
 	"math"
 	"runtime"
 	"sync/atomic"
 	"syscall"
 	"time"
+
+	"github.com/godzie44/go-uring/uring"
 )
 
 const (
@@ -20,7 +21,7 @@ const (
 	cqeBuffSize = 1 << 7
 )
 
-//RequestID identifier of operation queued into NetworkReactor.
+// RequestID identifier of operation queued into NetworkReactor.
 type RequestID uint64
 
 func packRequestID(fd int, nonce uint32) RequestID {
@@ -28,7 +29,7 @@ func packRequestID(fd int, nonce uint32) RequestID {
 }
 
 func (ud RequestID) fd() int {
-	var mask = uint64(math.MaxUint32)
+	mask := uint64(math.MaxUint32)
 	return int(uint64(ud) & mask)
 }
 
@@ -36,8 +37,8 @@ func (ud RequestID) nonce() uint32 {
 	return uint32(ud >> 32)
 }
 
-//NetworkReactor is event loop's manager with main responsibility - handling client requests and return responses asynchronously.
-//NetworkReactor optimized for network operations like Accept, Recv, Send.
+// NetworkReactor is event loop's manager with main responsibility - handling client requests and return responses asynchronously.
+// NetworkReactor optimized for network operations like Accept, Recv, Send.
 type NetworkReactor struct {
 	loops []*ringNetEventLoop
 
@@ -46,7 +47,7 @@ type NetworkReactor struct {
 	config *configuration
 }
 
-//NewNet create NetworkReactor instance.
+// NewNet create NetworkReactor instance.
 func NewNet(rings []*uring.Ring, opts ...Option) (*NetworkReactor, error) {
 	for _, ring := range rings {
 		if err := checkRingReq(ring, true); err != nil {
@@ -75,7 +76,7 @@ func NewNet(rings []*uring.Ring, opts ...Option) (*NetworkReactor, error) {
 	return r, nil
 }
 
-//Run start NetworkReactor.
+// Run start NetworkReactor.
 func (r *NetworkReactor) Run(ctx context.Context) {
 	for _, loop := range r.loops {
 		go loop.runConsumer(r.config.tickDuration)
@@ -90,7 +91,7 @@ func (r *NetworkReactor) Run(ctx context.Context) {
 	}
 }
 
-//NetOperation must be implemented by NetworkReactor supported operations.
+// NetOperation must be implemented by NetworkReactor supported operations.
 type NetOperation interface {
 	uring.Operation
 	Fd() int
@@ -121,14 +122,14 @@ func (r *NetworkReactor) loopForFd(fd int) *ringNetEventLoop {
 	return r.loops[h%n]
 }
 
-//Queue io_uring operation.
-//Return RequestID which can be used as the SQE identifier.
+// Queue io_uring operation.
+// Return RequestID which can be used as the SQE identifier.
 func (r *NetworkReactor) Queue(op NetOperation, cb Callback) RequestID {
 	return r.queue(op, cb, time.Duration(0))
 }
 
-//QueueWithDeadline io_uring operation.
-//After a deadline time, a CQE with the error ECANCELED will be placed in the callback function.
+// QueueWithDeadline io_uring operation.
+// After a deadline time, a CQE with the error ECANCELED will be placed in the callback function.
 func (r *NetworkReactor) QueueWithDeadline(op NetOperation, cb Callback, deadline time.Time) RequestID {
 	if deadline.IsZero() {
 		return r.Queue(op, cb)
@@ -137,8 +138,8 @@ func (r *NetworkReactor) QueueWithDeadline(op NetOperation, cb Callback, deadlin
 	return r.queue(op, cb, time.Until(deadline))
 }
 
-//Cancel queued operation.
-//id - SQE id returned by Queue method.
+// Cancel queued operation.
+// id - SQE id returned by Queue method.
 func (r *NetworkReactor) Cancel(id RequestID) {
 	loop := r.loopForFd(id.fd())
 	loop.cancel(id)
@@ -173,7 +174,7 @@ func newRingNetEventLoop(ring *uring.Ring, logger Logger, registry *cbRegistry) 
 }
 
 func (loop *ringNetEventLoop) runConsumer(tickDuration time.Duration) {
-	//runtime.LockOSThread()
+	// runtime.LockOSThread()
 
 	cqeBuff := make([]*uring.CQEvent, cqeBuffSize)
 	for {

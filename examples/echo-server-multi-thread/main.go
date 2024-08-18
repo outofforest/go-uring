@@ -1,3 +1,5 @@
+//go:build linux
+
 package main
 
 import (
@@ -15,21 +17,15 @@ import (
 	"github.com/godzie44/go-uring/uring"
 )
 
-type logger struct{}
-
-func (l *logger) Log(keyvals ...interface{}) {
-	log.Println(keyvals...)
-}
-
 const (
-	MaxConns  = 4096
-	MaxMsgLen = 2048
+	MaxConnections   = 4096
+	MaxMessageLength = 2048
 )
 
 func initBuffs() [][]byte {
-	buffs := make([][]byte, MaxConns)
+	buffs := make([][]byte, MaxConnections)
 	for i := range buffs {
-		buffs[i] = make([]byte, MaxMsgLen)
+		buffs[i] = make([]byte, MaxMessageLength)
 	}
 	return buffs
 }

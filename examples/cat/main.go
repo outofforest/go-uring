@@ -19,7 +19,7 @@ type (
 
 const (
 	QUEUE_DEPTH = 1
-	BLOCK_SIZE  = 1024
+	BLOCK_SIZE  = 32 * 1024
 )
 
 func main() {
@@ -39,6 +39,7 @@ func main() {
 	request := (*Request)(nil)
 
 	i := 0
+	j := 0
 
 	for i < len(args) {
 		request = &requests[i]
@@ -54,16 +55,12 @@ func main() {
 		}
 
 		i += 1
-	}
-
-	_, err = ring.Submit()
-	if err != nil {
-		log.Fatalln(err)
+		j += len(request.Buffers)
 	}
 
 	cqe := (*uring.CQEvent)(nil)
 
-	for i >= 0 {
+	for j >= 0 {
 		cqe, err = ring.WaitCQEvents(1)
 		if err != nil {
 			log.Fatalln(err)
@@ -75,14 +72,14 @@ func main() {
 		if request.Wait == 0 {
 			fmt.Println(request.File.Name() + ":")
 
-			for i := range request.Buffers {
+			for i = range request.Buffers {
 				fmt.Printf("%s", request.Buffers[i])
 			}
 
 			fmt.Println()
 		}
 
-		i -= 1
+		j -= 1
 	}
 }
 
@@ -105,11 +102,16 @@ func (request *Request) SubmitRead(ring *uring.Ring) error {
 			return err
 		}
 
+		_, err = ring.Submit()
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		i += 1
 		j += BLOCK_SIZE
 	}
 
-	request.Wait = len(request.Buffers)
+	request.Wait = i
 
 	return nil
 }

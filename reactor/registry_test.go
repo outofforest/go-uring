@@ -3,8 +3,9 @@ package reactor
 import (
 	"testing"
 
-	"github.com/godzie44/go-uring/uring"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/godzie44/go-uring/uring"
 )
 
 func TestRegistry(t *testing.T) {

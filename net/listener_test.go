@@ -7,10 +7,11 @@ import (
 	"sync"
 	"testing"
 
-	reactor "github.com/godzie44/go-uring/reactor"
-	"github.com/godzie44/go-uring/uring"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/godzie44/go-uring/reactor"
+	"github.com/godzie44/go-uring/uring"
 )
 
 func TestListenerAccept(t *testing.T) {

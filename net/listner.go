@@ -9,9 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	reactor "github.com/godzie44/go-uring/reactor"
-	"github.com/godzie44/go-uring/uring"
 	"golang.org/x/sys/unix"
+
+	"github.com/godzie44/go-uring/reactor"
+	"github.com/godzie44/go-uring/uring"
 )
 
 // defaultTCPKeepAlive is a default constant value for TCPKeepAlive times

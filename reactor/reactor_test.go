@@ -10,8 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/godzie44/go-uring/uring"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/godzie44/go-uring/uring"
 )
 
 type ReactorTestSuite struct {

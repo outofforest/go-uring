@@ -60,7 +60,7 @@ func main() {
 
 	cqe := (*uring.CQEvent)(nil)
 
-	for j >= 0 {
+	for j > 0 {
 		cqe, err = ring.WaitCQEvents(1)
 		if err != nil {
 			log.Fatalln(err)
@@ -78,6 +78,8 @@ func main() {
 
 			fmt.Println()
 		}
+
+		ring.SeenCQE(cqe)
 
 		j -= 1
 	}

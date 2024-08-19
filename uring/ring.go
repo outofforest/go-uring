@@ -188,8 +188,7 @@ func (r *Ring) Fd() int {
 }
 
 func (r *Ring) Close() error {
-	err := r.freeRing()
-	return joinErr(err, syscall.Close(r.fd))
+	return errors.Join(r.freeRing(), syscall.Close(r.fd))
 }
 
 var ErrSQOverflow = errors.New("sq ring overflow")
@@ -485,15 +484,4 @@ func (r *Ring) PeekCQEventBatch(buff []*CQEvent) int {
 	}
 
 	return n
-}
-
-func joinErr(err1, err2 error) error {
-	if err1 == nil {
-		return err2
-	}
-	if err2 == nil {
-		return err1
-	}
-
-	return fmt.Errorf("multiple errors: %w and %s", err1, err2.Error())
 }

@@ -3,6 +3,7 @@
 package uring
 
 import (
+	"errors"
 	"syscall"
 	"unsafe"
 )
@@ -147,9 +148,10 @@ func (r *Ring) allocRing(params *ringParams) error {
 
 func (r *Ring) freeRing() (err error) {
 	err = syscall.Munmap(r.sqRing.buff)
-	if r.cqRing.buff != nil && &r.cqRing.buff[0] != &r.sqRing.buff[0] {
-		err = joinErr(err, syscall.Munmap(r.cqRing.buff))
+
+	if r.cqRing.buff == nil || unsafe.SliceData(r.cqRing.buff) == unsafe.SliceData(r.sqRing.buff) {
+		return err
 	}
 
-	return err
+	return errors.Join(err, syscall.Munmap(r.cqRing.buff))
 }

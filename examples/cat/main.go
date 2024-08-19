@@ -7,11 +7,13 @@ import (
 	"unsafe"
 
 	"github.com/godzie44/go-uring/uring"
+	"golang.org/x/sys/unix"
 )
 
 type (
-	Request struct {
-		File    *os.File
+	File struct {
+		Name    string
+		FD      int
 		Buffers [][]byte
 		Wait    int
 	}
@@ -35,45 +37,47 @@ func main() {
 
 	args := os.Args[1:]
 
-	requests := make([]Request, len(args))
-	request := (*Request)(nil)
+	files := make([]File, len(args))
+	file := (*File)(nil)
 
 	i := 0
 	j := 0
 
 	for i < len(args) {
-		request = &requests[i]
+		file = &files[i]
 
-		request.File, err = os.Open(args[i])
+		file.Name = args[i]
+
+		file.FD, err = unix.Open(args[i], os.O_RDONLY, 0)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
-		err = request.SubmitRead(ring)
+		err = file.SubmitRead(ring)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		i += 1
-		j += len(request.Buffers)
+		j += len(file.Buffers)
 	}
 
 	cqe := (*uring.CQEvent)(nil)
 
 	for j > 0 {
-		cqe, err = ring.WaitCQEvents(1)
+		cqe, err = ring.PeekCQE()
 		if err != nil {
 			log.Fatalln(err)
 		}
 
-		request = (*Request)(unsafe.Pointer(uintptr(cqe.UserData)))
-		request.Wait -= 1
+		file = (*File)(unsafe.Pointer(uintptr(cqe.UserData)))
+		file.Wait -= 1
 
-		if request.Wait == 0 {
-			fmt.Println(request.File.Name() + ":")
+		if file.Wait == 0 {
+			fmt.Println(file.Name + ":")
 
-			for i = range request.Buffers {
-				fmt.Printf("%s", request.Buffers[i])
+			for i = range file.Buffers {
+				fmt.Printf("%s", file.Buffers[i])
 			}
 
 			fmt.Println()
@@ -85,21 +89,23 @@ func main() {
 	}
 }
 
-func (request *Request) SubmitRead(ring *uring.Ring) error {
-	file := request.File
+func (request *File) SubmitRead(ring *uring.Ring) error {
+	FD := request.FD
 
-	stat, err := file.Stat()
+	stat := new(unix.Stat_t)
+
+	err := unix.Fstat(FD, stat)
 	if err != nil {
 		return err
 	}
 
-	request.Buffers = getBuffers(stat.Size())
+	request.Buffers = getBuffers(stat.Size)
 
 	i := 0
 	j := uint64(0)
 
 	for i < len(request.Buffers) {
-		err = ring.QueueSQE(uring.Read(file.Fd(), request.Buffers[i], j), 0, uint64(uintptr(unsafe.Pointer(request))))
+		err = ring.QueueSQE(uring.Read(uintptr(FD), request.Buffers[i], j), 0, uint64(uintptr(unsafe.Pointer(request))))
 		if err != nil {
 			return err
 		}

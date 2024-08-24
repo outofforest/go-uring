@@ -1,4 +1,4 @@
-//go:build linux && !amd64_atomic
+//go:build linux
 
 package uring
 

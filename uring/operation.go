@@ -96,7 +96,7 @@ func ReadV(file *os.File, vectors [][]byte, offset uint64) *ReadVOp {
 }
 
 func (op *ReadVOp) PrepSQE(sqe *SQEntry) {
-	sqe.fill(ReadVCode, int32(op.FD), uintptr(unsafe.Pointer(&op.IOVecs[0])), uint32(len(op.IOVecs)), op.Offset)
+	sqe.fill(ReadVCode, int32(op.FD), uintptr(unsafe.Pointer(unsafe.SliceData(op.IOVecs))), uint32(len(op.IOVecs)), op.Offset)
 }
 
 func (op *ReadVOp) Code() OpCode {
@@ -123,7 +123,7 @@ func WriteV(file *os.File, bytes [][]byte, offset uint64) *WriteVOp {
 }
 
 func (op *WriteVOp) PrepSQE(sqe *SQEntry) {
-	sqe.fill(WriteVCode, int32(op.FD), uintptr(unsafe.Pointer(&op.IOVecs[0])), uint32(len(op.IOVecs)), op.Offset)
+	sqe.fill(WriteVCode, int32(op.FD), uintptr(unsafe.Pointer(unsafe.SliceData(op.IOVecs))), uint32(len(op.IOVecs)), op.Offset)
 }
 
 func (op *WriteVOp) Code() OpCode {
@@ -262,7 +262,7 @@ func (op *RecvOp) SetBuffer(buff []byte) {
 }
 
 func (op *RecvOp) PrepSQE(sqe *SQEntry) {
-	sqe.fill(RecvCode, int32(op.fd), uintptr(unsafe.Pointer(&op.buff[0])), uint32(len(op.buff)), 0)
+	sqe.fill(RecvCode, int32(op.fd), uintptr(unsafe.Pointer(unsafe.SliceData(op.buff))), uint32(len(op.buff)), 0)
 	sqe.OpcodeFlags = op.msgFlags
 }
 
@@ -295,7 +295,7 @@ func (op *SendOp) SetBuffer(buff []byte) {
 }
 
 func (op *SendOp) PrepSQE(sqe *SQEntry) {
-	sqe.fill(SendCode, int32(op.fd), uintptr(unsafe.Pointer(&op.buff[0])), uint32(len(op.buff)), 0)
+	sqe.fill(SendCode, int32(op.fd), uintptr(unsafe.Pointer(unsafe.SliceData(op.buff))), uint32(len(op.buff)), 0)
 	sqe.OpcodeFlags = op.msgFlags
 }
 
@@ -324,7 +324,7 @@ func ProvideBuffers(buff []byte, bufferId uint64, groupId uint16) *ProvideBuffer
 }
 
 func (op *ProvideBuffersOp) PrepSQE(sqe *SQEntry) {
-	sqe.fill(ProvideBuffersCode, int32(1), uintptr(unsafe.Pointer(&op.buff[0])), uint32(len(op.buff)), op.bufferId)
+	sqe.fill(ProvideBuffersCode, int32(1), uintptr(unsafe.Pointer(unsafe.SliceData(op.buff))), uint32(len(op.buff)), op.bufferId)
 	sqe.BufIG = op.groupId
 }
 
@@ -365,7 +365,7 @@ func Read(fd uintptr, buff []byte, offset uint64) *ReadOp {
 }
 
 func (op *ReadOp) PrepSQE(sqe *SQEntry) {
-	sqe.fill(ReadCode, int32(op.fd), uintptr(unsafe.Pointer(&op.buff[0])), uint32(len(op.buff)), op.off)
+	sqe.fill(ReadCode, int32(op.fd), uintptr(unsafe.Pointer(unsafe.SliceData(op.buff))), uint32(len(op.buff)), op.off)
 }
 
 func (op *ReadOp) Code() OpCode {
@@ -385,7 +385,7 @@ func Write(fd uintptr, buff []byte, offset uint64) *WriteOp {
 }
 
 func (op *WriteOp) PrepSQE(sqe *SQEntry) {
-	sqe.fill(WriteCode, int32(op.fd), uintptr(unsafe.Pointer(&op.buff[0])), uint32(len(op.buff)), op.off)
+	sqe.fill(WriteCode, int32(op.fd), uintptr(unsafe.Pointer(unsafe.SliceData(op.buff))), uint32(len(op.buff)), op.off)
 }
 
 func (op *WriteOp) Code() OpCode {

@@ -3,9 +3,9 @@
 package net
 
 import (
-	"errors"
 	"log"
 	"net"
+	"os"
 	"syscall"
 	"unsafe"
 
@@ -20,7 +20,7 @@ type (
 	}
 
 	Listener struct {
-		Ring            *uring.Ring
+		Rings           []*uring.Ring
 		AcceptOp        *uring.AcceptOp
 		FD              uintptr
 		Config          *ListenConfig
@@ -53,7 +53,7 @@ const (
 	UserDataTypeSend
 )
 
-func Listen(ring *uring.Ring) (net.Listener, error) {
+func Listen(rings []*uring.Ring) (net.Listener, error) {
 	FD, err := unix.Socket(unix.AF_INET, unix.SOCK_STREAM, 0)
 	if err != nil {
 		return nil, err
@@ -94,13 +94,13 @@ func Listen(ring *uring.Ring) (net.Listener, error) {
 	}
 
 	listener := &Listener{
-		Ring:            ring,
+		Rings:           rings,
 		AcceptOp:        uring.Accept(uintptr(FD), 0),
 		FD:              uintptr(FD),
 		Config:          config,
-		ToAcceptChannel: make(chan struct{}),
-		ToRecvChannel:   make(chan *Connection),
-		ToSendChannel:   make(chan *Connection),
+		ToAcceptChannel: make(chan struct{}, 1),
+		ToRecvChannel:   make(chan *Connection, 1),
+		ToSendChannel:   make(chan *Connection, 1),
 		AcceptChannel:   make(chan int32, 1),
 		ResultsChannel:  make(chan []Result),
 		AcceptData: UserData{
@@ -108,7 +108,12 @@ func Listen(ring *uring.Ring) (net.Listener, error) {
 		},
 	}
 
-	go listener.b1()
+	i := 0
+
+	for i = range rings {
+		go listener.b1(i)
+	}
+
 	go listener.b2()
 	go listener.b3()
 
@@ -157,20 +162,23 @@ func (listener *Listener) Close() error {
 	return unix.Close(int(listener.FD))
 }
 
-func (listener *Listener) b1() {
-	ring := listener.Ring
+func (listener *Listener) b1(i int) {
+	ring := listener.Rings[i]
 	CQEs := make([]*uring.CQEvent, listener.Config.Backlog)
 	results := []Result(nil)
-	CQE := (*uring.CQEvent)(nil)
+	CQE, err := (*uring.CQEvent)(nil), error(nil)
 
 	n := 0
-	i := 0
+	j := 0
 
 	for {
-		_, err := ring.WaitCQEvents(1)
+		_, err = ring.WaitCQEvents(1)
 		if err != nil {
-			if errors.Is(err, syscall.EAGAIN) || errors.Is(err, syscall.EINTR) {
-				continue
+			switch typed := err.(type) {
+			case *os.SyscallError:
+				if typed.Err == syscall.EAGAIN || typed.Err == syscall.EINTR {
+					continue
+				}
 			}
 
 			log.Panic(err)
@@ -184,8 +192,8 @@ func (listener *Listener) b1() {
 
 			results = make([]Result, n)
 
-			for i, CQE = range CQEs[:n] {
-				results[i] = Result{
+			for j, CQE = range CQEs[:n] {
+				results[j] = Result{
 					UserData: Uint64ToPtr[UserData](CQE.UserData),
 					Result:   CQE.Res,
 				}
@@ -198,10 +206,15 @@ func (listener *Listener) b1() {
 }
 
 func (listener *Listener) b2() {
-	ring := listener.Ring
+	ring := (*uring.Ring)(nil)
 	connection, err := (*Connection)(nil), error(nil)
 
+	i := 0
+	last := len(listener.Rings) - 1
+
 	for {
+		ring = listener.Rings[i]
+
 		select {
 		case <-listener.ToAcceptChannel:
 			err = ring.QueueSQE(listener.AcceptOp, 0, PtrToUint64(&listener.AcceptData))
@@ -217,6 +230,12 @@ func (listener *Listener) b2() {
 		_, err := ring.Submit()
 		if err != nil {
 			log.Panic(err)
+		}
+
+		if i == last {
+			i = 0
+		} else {
+			i += 1
 		}
 	}
 }

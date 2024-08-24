@@ -113,7 +113,7 @@ func (r *Ring) allocRing(params *ringParams) error {
 		r.cqRing.buff = data
 	}
 
-	ringStart := &r.sqRing.buff[0]
+	ringStart := unsafe.SliceData(r.sqRing.buff)
 	r.sqRing.kHead = (*uint32)(unsafe.Pointer(uintptr(unsafe.Pointer(ringStart)) + uintptr(params.sqOffset.head)))
 	r.sqRing.kTail = (*uint32)(unsafe.Pointer(uintptr(unsafe.Pointer(ringStart)) + uintptr(params.sqOffset.tail)))
 	r.sqRing.kRingMask = (*uint32)(unsafe.Pointer(uintptr(unsafe.Pointer(ringStart)) + uintptr(params.sqOffset.ringMask)))
@@ -130,8 +130,10 @@ func (r *Ring) allocRing(params *ringParams) error {
 	}
 	r.sqRing.sqeBuff = buff
 
-	cqRingPtr := uintptr(unsafe.Pointer(&r.cqRing.buff[0]))
-	ringStart = &r.cqRing.buff[0]
+	ptr := unsafe.SliceData(r.cqRing.buff)
+
+	cqRingPtr := uintptr(unsafe.Pointer(ptr))
+	ringStart = ptr
 
 	r.cqRing.kHead = (*uint32)(unsafe.Pointer(uintptr(unsafe.Pointer(ringStart)) + uintptr(params.cqOffset.head)))
 	r.cqRing.kTail = (*uint32)(unsafe.Pointer(uintptr(unsafe.Pointer(ringStart)) + uintptr(params.cqOffset.tail)))

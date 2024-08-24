@@ -241,7 +241,7 @@ func (r *Ring) Submit() (uint, error) {
 		flags |= sysRingEnterGetEvents
 	}
 
-	consumed, err := sysEnter(r.fd, flushed, 0, flags, nil, true)
+	consumed, err := sysEnter(r.fd, flushed, 0, flags, nil, false)
 	return consumed, err
 }
 

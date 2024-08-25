@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"runtime"
 	"syscall"
 	"unsafe"
 
@@ -93,15 +94,17 @@ func Listen(rings []*uring.Ring) (net.Listener, error) {
 		Backlog: unix.SOMAXCONN,
 	}
 
+	numCPU := runtime.NumCPU()
+
 	listener := &Listener{
 		Rings:           rings,
 		AcceptOp:        uring.Accept(uintptr(FD), 0),
 		FD:              uintptr(FD),
 		Config:          config,
 		ToAcceptChannel: make(chan struct{}, 1),
-		ToRecvChannel:   make(chan *Connection, 1),
-		ToSendChannel:   make(chan *Connection, 1),
-		AcceptChannel:   make(chan int32, 1),
+		ToRecvChannel:   make(chan *Connection, numCPU),
+		ToSendChannel:   make(chan *Connection, numCPU),
+		AcceptChannel:   make(chan int32),
 		ResultsChannel:  make(chan []Result),
 		AcceptData: UserData{
 			Type: UserDataTypeAccept,
@@ -138,8 +141,8 @@ func (listener *Listener) Accept() (net.Conn, error) {
 		ConnectionList: &listener.ConnectionList,
 		ToRecvChannel:  listener.ToRecvChannel,
 		ToSendChannel:  listener.ToSendChannel,
-		RecvChannel:    make(chan int32, 1),
-		SendChannel:    make(chan int32, 1),
+		RecvChannel:    make(chan int32),
+		SendChannel:    make(chan int32),
 		RecvData: UserData{
 			Type: UserDataTypeRecv,
 		},

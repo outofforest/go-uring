@@ -241,7 +241,7 @@ func (r *Ring) Submit() (uint, error) {
 		flags |= sysRingEnterGetEvents
 	}
 
-	consumed, err := sysEnter(r.fd, flushed, 0, flags, nil, false)
+	consumed, err := sysEnter(r.fd, flushed, 0, flags, nil, true)
 	return consumed, err
 }
 
@@ -478,7 +478,7 @@ func (r *Ring) PeekCQEventBatch(buff []*CQEvent) int {
 	n := r.peekCQEventBatch(buff)
 	if n == 0 {
 		if r.sqRing.cqNeedFlush() {
-			_, _ = sysEnter(r.fd, 0, 0, sysRingEnterGetEvents, nil, false)
+			_, _ = sysEnter(r.fd, 0, 0, sysRingEnterGetEvents, nil, true)
 			n = r.peekCQEventBatch(buff)
 		}
 	}

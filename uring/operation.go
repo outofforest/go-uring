@@ -20,9 +20,9 @@ const (
 	NopCode OpCode = iota
 	ReadVCode
 	WriteVCode
-	opFSync
-	opReadFixed
-	opWriteFixed
+	FSync
+	ReadFixed
+	WriteFixed
 	opPollAdd
 	opPollRemove
 	opSyncFileRange

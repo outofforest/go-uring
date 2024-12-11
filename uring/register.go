@@ -17,6 +17,14 @@ const (
 	sysRingRegisterIOWQMaxWorkers = 19
 )
 
+const (
+	// MaxNumOfBuffers specifies how many buffers might be registered.
+	MaxNumOfBuffers = 16_384
+
+	// MaxBufferSize specifies the maximum number of single buffer.
+	MaxBufferSize = 1024 * 1024 * 1024
+)
+
 type (
 	Probe struct {
 		lastOp uint8

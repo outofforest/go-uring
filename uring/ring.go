@@ -62,25 +62,25 @@ var ErrRingSetup = errors.New("ring setup")
 
 type SetupOption func(params *ringParams)
 
-// WithCQSize set CQ max entries count.
-func WithCQSize(sz uint32) SetupOption {
+// WithFlags set setup flags.
+func WithFlags(flags uint32) SetupOption {
 	return func(params *ringParams) {
-		params.flags = params.flags | setupCQSize
-		params.cqEntries = sz
+		params.flags = params.flags | flags
 	}
 }
 
-// WithIOPoll enable IOPOLL option.
-func WithIOPoll() SetupOption {
+// WithCQSize set CQ max entries count.
+func WithCQSize(sz uint32) SetupOption {
 	return func(params *ringParams) {
-		params.flags = params.flags | setupIOPoll
+		params.flags = params.flags | SetupCQSize
+		params.cqEntries = sz
 	}
 }
 
 // WithAttachedWQ use worker pool from another io_uring instance.
 func WithAttachedWQ(fd int) SetupOption {
 	return func(params *ringParams) {
-		params.flags = params.flags | setupAttachWQ
+		params.flags = params.flags | SetupAttachWQ
 		params.wqFD = uint32(fd)
 	}
 }
@@ -90,7 +90,7 @@ func WithAttachedWQ(fd int) SetupOption {
 // or the user should have the CAP_SYS_NICE capability (for kernel version >= 5.11).
 func WithSQPoll(threadIdle time.Duration) SetupOption {
 	return func(params *ringParams) {
-		params.flags = params.flags | setupSQPoll
+		params.flags = params.flags | SetupSQPoll
 		params.sqThreadIdle = uint32(threadIdle.Milliseconds())
 	}
 }
@@ -98,7 +98,7 @@ func WithSQPoll(threadIdle time.Duration) SetupOption {
 // WithSQThreadCPU bound poll thread to the cpu.
 func WithSQThreadCPU(cpu uint32) SetupOption {
 	return func(params *ringParams) {
-		params.flags = params.flags | setupSQAff
+		params.flags = params.flags | SetupSQAff
 		params.sqThreadCpu = cpu
 	}
 }
@@ -130,7 +130,7 @@ type Defer func() error
 
 // CreateMany create multiple io_uring instances. Entries - size of SQ and CQ buffers.
 // count - the number of io_uring instances. wpCount - the number of worker pools, this value must be a multiple of the entries.
-// If workerCount < count worker pool will be shared with setupAttachWQ flag.
+// If workerCount < count worker pool will be shared with SetupAttachWQ flag.
 func CreateMany(count int, entries uint32, wpCount int, opts ...SetupOption) ([]*Ring, Defer, error) {
 	if wpCount > count {
 		return nil, nil, errors.New("number of io_uring instances must be greater or equal number of worker pools")
@@ -237,7 +237,7 @@ func (r *Ring) Submit() (uint, error) {
 		return uint(flushed), nil
 	}
 
-	if r.Params.flags&setupIOPoll == 1 {
+	if r.Params.flags&SetupIOPoll == 1 {
 		flags |= sysRingEnterGetEvents
 	}
 
@@ -246,7 +246,7 @@ func (r *Ring) Submit() (uint, error) {
 }
 
 func (r *Ring) needsEnter(flags *uint32) bool {
-	if r.Params.flags&setupSQPoll == 0 {
+	if r.Params.flags&SetupSQPoll == 0 {
 		return true
 	}
 	if ReadOnceUint32(r.sqRing.kFlags)&sqNeedWakeup != 0 {

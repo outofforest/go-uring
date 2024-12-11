@@ -47,13 +47,15 @@ type (
 
 // io_uring_setup() flags
 const (
-	setupIOPoll    uint32 = 1 << 0
-	setupSQPoll    uint32 = 1 << 1
-	setupSQAff     uint32 = 1 << 2
-	setupCQSize    uint32 = 1 << 3 /* app defines CQ size */
-	setupClamp     uint32 = 1 << 4
-	setupAttachWQ  uint32 = 1 << 5
-	setupRDisabled uint32 = 1 << 6
+	SetupIOPoll       uint32 = 1 << 0
+	SetupSQPoll       uint32 = 1 << 1
+	SetupSQAff        uint32 = 1 << 2
+	SetupCQSize       uint32 = 1 << 3 /* app defines CQ size */
+	SetupClamp        uint32 = 1 << 4
+	SetupAttachWQ     uint32 = 1 << 5
+	SetupRDisabled    uint32 = 1 << 6
+	SetupCoopTaskRun  uint32 = 1 << 8
+	SetupSingleIssuer uint32 = 1 << 12
 )
 
 const (

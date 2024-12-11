@@ -42,6 +42,11 @@ const (
 	SqeBufferSelectFlag uint8 = 1 << 5
 )
 
+// SQE opcode flags
+const (
+	FSyncDataSync uint32 = 1 << 0
+)
+
 const (
 	libUserDataTimeout = math.MaxUint64
 )

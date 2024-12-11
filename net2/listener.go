@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/godzie44/go-uring/uring"
+	"github.com/outofforest/go-uring/uring"
 )
 
 type (

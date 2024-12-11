@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"flag"
 	"fmt"
 	"io"
@@ -13,11 +14,9 @@ import (
 	"runtime"
 	"strconv"
 
-	_ "embed"
-
-	net "github.com/godzie44/go-uring/net"
-	reactor "github.com/godzie44/go-uring/reactor"
-	"github.com/godzie44/go-uring/uring"
+	"github.com/outofforest/go-uring/net"
+	"github.com/outofforest/go-uring/reactor"
+	"github.com/outofforest/go-uring/uring"
 )
 
 //go:embed gopher.png

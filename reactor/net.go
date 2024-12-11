@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/godzie44/go-uring/uring"
+	"github.com/outofforest/go-uring/uring"
 )
 
 const (

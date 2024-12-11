@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/godzie44/go-uring/uring"
+	"github.com/outofforest/go-uring/uring"
 )
 
 func TestRegistry(t *testing.T) {

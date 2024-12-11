@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/godzie44/go-uring/uring"
+	"github.com/outofforest/go-uring/uring"
 )
 
 type ReactorTestSuite struct {

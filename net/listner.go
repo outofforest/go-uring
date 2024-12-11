@@ -11,8 +11,8 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/godzie44/go-uring/reactor"
-	"github.com/godzie44/go-uring/uring"
+	"github.com/outofforest/go-uring/reactor"
+	"github.com/outofforest/go-uring/uring"
 )
 
 // defaultTCPKeepAlive is a default constant value for TCPKeepAlive times

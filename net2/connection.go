@@ -10,8 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/godzie44/go-uring/uring"
 	"golang.org/x/sys/unix"
+
+	"github.com/outofforest/go-uring/uring"
 )
 
 type (

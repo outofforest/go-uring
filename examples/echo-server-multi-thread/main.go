@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"time"
 
-	uringnet "github.com/godzie44/go-uring/net"
-	"github.com/godzie44/go-uring/reactor"
-	"github.com/godzie44/go-uring/uring"
+	uringnet "github.com/outofforest/go-uring/net"
+	"github.com/outofforest/go-uring/reactor"
+	"github.com/outofforest/go-uring/uring"
 )
 
 const (
